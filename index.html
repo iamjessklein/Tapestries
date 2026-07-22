@@ -42,15 +42,9 @@
     .logo-icon {
       width: 32px;
       height: 32px;
-      background: #d85630;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 700;
-      font-size: 18px;
+      display: block;
       flex-shrink: 0;
+      object-fit: contain;
     }
 
     .hamburger {
@@ -414,19 +408,7 @@
   <!-- Navigation -->
   <nav>
     <div class="logo">
-      <svg class="logo-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-        <rect width="32" height="32" rx="8" fill="#d85630"/>
-        <g transform="translate(8, 6)" fill="white">
-          <!-- T shape -->
-          <rect x="0" y="0" width="16" height="3" rx="1"/>
-          <rect x="6.5" y="3" width="3" height="12" rx="1.5"/>
-          <!-- Arrow -->
-          <g transform="translate(10, 12)">
-            <rect x="-1.5" y="0" width="3" height="6" rx="1.5"/>
-            <polygon points="4,6 0,2 -4,6"/>
-          </g>
-        </g>
-      </svg>
+      <img src="img/tapestries-logo.png" alt="Tapestries" class="logo-icon">
       <span>Tapestries</span>
     </div>
     <button class="hamburger" id="hamburger">
