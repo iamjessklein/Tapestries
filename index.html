@@ -29,6 +29,8 @@
       padding: 16px 24px;
       background: #f5f1ed;
       border-bottom: 1px solid rgba(200, 150, 120, 0.2);
+      position: relative;
+      z-index: 10;
     }
 
     .logo {
@@ -138,6 +140,18 @@
       align-items: center;
       overflow: hidden;
       background: #f5f1ed;
+      z-index: 5;
+    }
+
+    #hero-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: 0;
+      display: block;
+      pointer-events: none;
     }
 
     .hero-content {
@@ -401,6 +415,8 @@
   </style>
 </head>
 <body>
+  <canvas id="hero-canvas"></canvas>
+
   <!-- Navigation -->
   <nav>
     <div class="logo">
@@ -493,6 +509,97 @@
         });
       });
     }
+
+    // Hero threading animation
+    const canvas = document.getElementById('hero-canvas');
+    const ctx = canvas.getContext('2d');
+    let threads = [];
+    let mouseX = canvas.width / 2;
+    let mouseY = canvas.height / 2;
+    let lastMouseX = mouseX;
+    let lastMouseY = mouseY;
+    let movementIntensity = 0;
+
+    const colors = ['#FFD700', '#FF1493', '#00CED1', '#32CD32', '#FF4500', '#9370DB'];
+
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    document.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+
+      const distance = Math.hypot(mouseX - lastMouseX, mouseY - lastMouseY);
+      movementIntensity = Math.min(distance / 10, 5);
+
+      lastMouseX = mouseX;
+      lastMouseY = mouseY;
+
+      for (let i = 0; i < Math.ceil(movementIntensity); i++) {
+        threads.push({
+          x: mouseX,
+          y: mouseY,
+          vx: (Math.random() - 0.5) * 4,
+          vy: (Math.random() - 0.5) * 4,
+          life: 1,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          width: Math.random() * 2 + 1
+        });
+      }
+    });
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      threads = threads.filter(thread => {
+        thread.x += thread.vx;
+        thread.y += thread.vy;
+        thread.life -= 0.01;
+        thread.vx *= 0.98;
+        thread.vy *= 0.98;
+        return thread.life > 0;
+      });
+
+      threads.forEach((thread, i) => {
+        ctx.strokeStyle = thread.color;
+        ctx.globalAlpha = thread.life * 0.6;
+        ctx.lineWidth = thread.width;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(thread.x, thread.y);
+        ctx.lineTo(thread.x - thread.vx, thread.y - thread.vy);
+        ctx.stroke();
+
+        threads.slice(i + 1).forEach(otherThread => {
+          const dx = otherThread.x - thread.x;
+          const dy = otherThread.y - thread.y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist < 150) {
+            ctx.strokeStyle = thread.color;
+            ctx.globalAlpha = thread.life * otherThread.life * 0.3;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(thread.x, thread.y);
+            ctx.lineTo(otherThread.x, otherThread.y);
+            ctx.stroke();
+          }
+        });
+      });
+
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(animate);
+    }
+
+    animate();
 
     // Fallback sample projects
     const sampleProjects = [
