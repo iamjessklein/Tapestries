@@ -560,6 +560,19 @@
       }
     });
 
+    // Fade threads out as they approach and enter the persona section.
+    // Canvas is a fixed overlay (top: 0), so a thread's y matches its screen y.
+    function positionFade(y) {
+      const personaSection = document.querySelector('.who-weaving');
+      if (!personaSection) return 1;
+      const personaTop = personaSection.getBoundingClientRect().top;
+      const fadeStart = personaTop - 160; // begin fading this far above the section
+      const fadeEnd = personaTop + 40;    // fully gone just inside the content
+      if (y <= fadeStart) return 1;
+      if (y >= fadeEnd) return 0;
+      return 1 - (y - fadeStart) / (fadeEnd - fadeStart);
+    }
+
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -573,8 +586,11 @@
       });
 
       threads.forEach((thread, i) => {
+        const fade = positionFade(thread.y);
+        if (fade <= 0) return;
+
         ctx.strokeStyle = thread.color;
-        ctx.globalAlpha = thread.life * 0.6;
+        ctx.globalAlpha = thread.life * 0.6 * fade;
         ctx.lineWidth = thread.width;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
@@ -590,8 +606,10 @@
           const dist = Math.hypot(dx, dy);
 
           if (dist < 150) {
+            const linkFade = Math.min(fade, positionFade(otherThread.y));
+            if (linkFade <= 0) return;
             ctx.strokeStyle = thread.color;
-            ctx.globalAlpha = thread.life * otherThread.life * 0.3;
+            ctx.globalAlpha = thread.life * otherThread.life * 0.3 * linkFade;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(thread.x, thread.y);
